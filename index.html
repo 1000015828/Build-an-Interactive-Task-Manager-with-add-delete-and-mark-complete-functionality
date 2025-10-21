@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Task Manager</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #f3f4f6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      width: 360px;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .input-section {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      margin-left: 10px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    li {
+      background: #f9fafb;
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 5px solid transparent;
+      transition: all 0.2s;
+    }
+
+    li.completed {
+      text-decoration: line-through;
+      opacity: 0.6;
+      border-left-color: #16a34a;
+    }
+
+    .actions button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .actions .complete {
+      color: #16a34a;
+    }
+
+    .actions .delete {
+      color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Task Manager 📝</h1>
+    <div class="input-section">
+      <input type="text" id="taskInput" placeholder="Add a new task..." />
+      <button id="addTaskBtn">Add</button>
+    </div>
+    <ul id="taskList"></ul>
+  </div>
+
+  <script>
+    const taskInput = document.getElementById("taskInput");
+    const addTaskBtn = document.getElementById("addTaskBtn");
+    const taskList = document.getElementById("taskList");
+
+    // Load saved tasks from localStorage
+    document.addEventListener("DOMContentLoaded", loadTasks);
+
+    // Add Task
+    addTaskBtn.addEventListener("click", addTask);
+    taskInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") addTask();
+    });
+
+    function addTask() {
+      const taskText = taskInput.value.trim();
+      if (!taskText) return;
+
+      const task = { text: taskText, completed: false };
+      saveTask(task);
+      renderTask(task);
+
+      taskInput.value = "";
+      taskInput.focus();
+    }
+
+    // Render a single task
+    function renderTask(task) {
+      const li = document.createElement("li");
+      li.textContent = task.text;
+      if (task.completed) li.classList.add("completed");
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      const completeBtn = document.createElement("button");
+      completeBtn.innerHTML = "✔";
+      completeBtn.className = "complete";
+      completeBtn.onclick = () => toggleComplete(task.text, li);
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.innerHTML = "🗑";
+      deleteBtn.className = "delete";
+      deleteBtn.onclick = () => deleteTask(task.text, li);
+
+      actions.append(completeBtn, deleteBtn);
+      li.appendChild(actions);
+      taskList.appendChild(li);
+    }
+
+    // Save task to localStorage
+    function saveTask(task) {
+      const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      tasks.push(task);
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    // Load all tasks from localStorage
+    function loadTasks() {
+      const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      tasks.forEach(renderTask);
+    }
+
+    // Toggle complete
+    function toggleComplete(text, li) {
+      li.classList.toggle("completed");
+      const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      const updated = tasks.map((t) =>
+        t.text === text ? { ...t, completed: !t.completed } : t
+      );
+      localStorage.setItem("tasks", JSON.stringify(updated));
+    }
+
+    // Delete task
+    function deleteTask(text, li) {
+      li.remove();
+      const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+      const filtered = tasks.filter((t) => t.text !== text);
+      localStorage.setItem("tasks", JSON.stringify(filtered));
+    }
+  </script>
+</body>
+</html>
